@@ -1,0 +1,1529 @@
+===== FILE: pubspec.yaml =====
+name: flutter_aplikasi
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+  image_picker: ^1.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^6.0.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/to/resolution-aware-images
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/to/asset-from-package
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package
+
+===== FILE: lib/main.dart =====
+import 'package:flutter/material.dart';
+import 'screens/auth/login_screen.dart';
+import 'utils/constants.dart';
+
+void main() {
+  runApp(const MitraMediaDataApp());
+}
+
+class MitraMediaDataApp extends StatelessWidget {
+  const MitraMediaDataApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: AppConstants.appName,
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0077B6),
+          primary: const Color(0xFF0077B6),
+          secondary: const Color(0xFF00B4D8),
+          surface: Colors.white,
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF4F7FB),
+        appBarTheme: const AppBarTheme(
+          centerTitle: false,
+          elevation: 0,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+        fontFamily: 'Roboto',
+      ),
+      home: const LoginScreen(),
+    );
+  }
+}
+
+===== FILE: lib/models/customer_model.dart =====
+import '../utils/constants.dart';
+
+enum PaymentStatus {
+  belumBayar,
+  sudahBayar,
+}
+
+extension PaymentStatusExtension on PaymentStatus {
+  String get label {
+    switch (this) {
+      case PaymentStatus.belumBayar:
+        return 'Belum Bayar';
+      case PaymentStatus.sudahBayar:
+        return 'Lunas';
+    }
+  }
+}
+
+class CustomerModel {
+  final String id;
+  final String registrationCode; // Format: MMD-YYYYMM-XXX
+  final String fullName;
+  final String phoneNumber;
+  final String address;
+  String selectedPackage; // e.g. "30 Mbps Home", "50 Mbps Pro"
+  final double latitude;
+  final double longitude;
+  final DateTime createdAt;
+
+  // Status Lifecycle (5 Status: Menunggu Jadwal -> Dijadwalkan -> Progres -> Menunggu Verifikasi -> Selesai)
+  CustomerStatus status;
+
+  // Smart Coverage Info
+  final String nearestOdpCode;
+  final double distanceToOdpMeter; // dalam meter
+
+  // Verifikasi & Sortir Admin
+  bool isPackageVerified;
+  PaymentStatus? _paymentStatus;
+  PaymentStatus get paymentStatus => _paymentStatus ?? PaymentStatus.belumBayar;
+  set paymentStatus(PaymentStatus value) => _paymentStatus = value;
+
+  String? paymentMethod; // e.g. "Transfer Mandiri", "QRIS", "Tunai"
+  int packagePrice; // Biaya langganan/deposit awal (Rp)
+  DateTime? paymentDate;
+
+  // Penjadwalan & Petugas (Diisi Admin setelah lolos verifikasi bayar)
+  DateTime? scheduledDate;
+  String? scheduledTimeSlot; // e.g. "Pagi (09.00 - 12.00)"
+  String? assignedTechnician; // e.g. "Tim Alpha (Budi & Doni)"
+  String? adminNotes;
+
+  // Eksekusi Teknis (Diisi Teknisi saat kirim laporan)
+  String? modemSerialNumber;
+  String? odpPortUsed;
+  double? opticalAttenuationDbm; // Redaman dalam -dBm (e.g. -20.5)
+  String? installationPhotoUrl;
+  DateTime? reportSubmittedAt;
+
+  // Verifikasi Laporan Akhir oleh Admin
+  String? adminFeedback; // Catatan persetujuan atau catatan revisi dari admin
+  DateTime? completedAt;
+
+  CustomerModel({
+    required this.id,
+    required this.registrationCode,
+    required this.fullName,
+    required this.phoneNumber,
+    required this.address,
+    required this.selectedPackage,
+    required this.latitude,
+    required this.longitude,
+    required this.createdAt,
+    this.status = CustomerStatus.menungguJadwal,
+    required this.nearestOdpCode,
+    required this.distanceToOdpMeter,
+    this.isPackageVerified = false,
+    PaymentStatus? paymentStatus = PaymentStatus.belumBayar,
+    this.paymentMethod,
+    this.packagePrice = 320000,
+    this.paymentDate,
+    this.scheduledDate,
+    this.scheduledTimeSlot,
+    this.assignedTechnician,
+    this.adminNotes,
+    this.modemSerialNumber,
+    this.odpPortUsed,
+    this.opticalAttenuationDbm,
+    this.installationPhotoUrl,
+    this.reportSubmittedAt,
+    this.adminFeedback,
+    this.completedAt,
+  }) : _paymentStatus = paymentStatus ?? PaymentStatus.belumBayar;
+
+  bool get isReadyForTechnician =>
+      isPackageVerified && paymentStatus == PaymentStatus.sudahBayar;
+
+  // Salin dengan update status/data
+  CustomerModel copyWith({
+    CustomerStatus? status,
+    String? selectedPackage,
+    bool? isPackageVerified,
+    PaymentStatus? paymentStatus,
+    String? paymentMethod,
+    int? packagePrice,
+    DateTime? paymentDate,
+    DateTime? scheduledDate,
+    String? scheduledTimeSlot,
+    String? assignedTechnician,
+    String? adminNotes,
+    String? modemSerialNumber,
+    String? odpPortUsed,
+    double? opticalAttenuationDbm,
+    String? installationPhotoUrl,
+    DateTime? reportSubmittedAt,
+    String? adminFeedback,
+    DateTime? completedAt,
+  }) {
+    return CustomerModel(
+      id: id,
+      registrationCode: registrationCode,
+      fullName: fullName,
+      phoneNumber: phoneNumber,
+      address: address,
+      selectedPackage: selectedPackage ?? this.selectedPackage,
+      latitude: latitude,
+      longitude: longitude,
+      createdAt: createdAt,
+      status: status ?? this.status,
+      nearestOdpCode: nearestOdpCode,
+      distanceToOdpMeter: distanceToOdpMeter,
+      isPackageVerified: isPackageVerified ?? this.isPackageVerified,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      packagePrice: packagePrice ?? this.packagePrice,
+      paymentDate: paymentDate ?? this.paymentDate,
+      scheduledDate: scheduledDate ?? this.scheduledDate,
+      scheduledTimeSlot: scheduledTimeSlot ?? this.scheduledTimeSlot,
+      assignedTechnician: assignedTechnician ?? this.assignedTechnician,
+      adminNotes: adminNotes ?? this.adminNotes,
+      modemSerialNumber: modemSerialNumber ?? this.modemSerialNumber,
+      odpPortUsed: odpPortUsed ?? this.odpPortUsed,
+      opticalAttenuationDbm: opticalAttenuationDbm ?? this.opticalAttenuationDbm,
+      installationPhotoUrl: installationPhotoUrl ?? this.installationPhotoUrl,
+      reportSubmittedAt: reportSubmittedAt ?? this.reportSubmittedAt,
+      adminFeedback: adminFeedback ?? this.adminFeedback,
+      completedAt: completedAt ?? this.completedAt,
+    );
+  }
+
+  // Helper untuk mengecek apakah sinyal redaman lolos standar ISP
+  bool get isAttenuationAcceptable {
+    if (opticalAttenuationDbm == null) return false;
+    return opticalAttenuationDbm! >= -25.0 && opticalAttenuationDbm! <= -15.0;
+  }
+}
+
+===== FILE: lib/models/odp_model.dart =====
+class OdpPoint {
+  final String id;
+  final String code; // Contoh: ODP-MMD-KBU-01
+  final String locationName;
+  final double latitude;
+  final double longitude;
+  final int totalPorts;
+  final int usedPorts;
+
+  OdpPoint({
+    required this.id,
+    required this.code,
+    required this.locationName,
+    required this.latitude,
+    required this.longitude,
+    this.totalPorts = 8,
+    this.usedPorts = 4,
+  });
+
+  int get availablePorts => totalPorts - usedPorts;
+  bool get hasCapacity => availablePorts > 0;
+}
+
+===== FILE: lib/models/user_model.dart =====
+enum UserRole {
+  admin,
+  technician,
+}
+
+class UserModel {
+  final String id;
+  final String username;
+  final String password;
+  final String fullName;
+  final UserRole role;
+  final String? teamName; // Khusus teknisi (misal: "Tim Alpha (Budi & Doni)")
+  final String email;
+
+  const UserModel({
+    required this.id,
+    required this.username,
+    required this.password,
+    required this.fullName,
+    required this.role,
+    this.teamName,
+    required this.email,
+  });
+
+  bool get isAdmin => role == UserRole.admin;
+  bool get isTechnician => role == UserRole.technician;
+}
+
+===== FILE: lib/screens/home_role_selector_screen.dart =====
+import 'package:flutter/material.dart';
+import '../utils/constants.dart';
+import 'admin/admin_dashboard_screen.dart';
+import 'technician/technician_dashboard_screen.dart';
+
+class HomeRoleSelectorScreen extends StatefulWidget {
+  const HomeRoleSelectorScreen({super.key});
+
+  @override
+  State<HomeRoleSelectorScreen> createState() => _HomeRoleSelectorScreenState();
+}
+
+class _HomeRoleSelectorScreenState extends State<HomeRoleSelectorScreen> {
+  String _selectedTechnicianTeam = 'Tim Alpha (Budi & Doni)';
+
+  final List<String> _technicianTeams = [
+    'Tim Alpha (Budi & Doni)',
+    'Tim Beta (Agus & Rian)',
+    'Tim Gamma (Eko & Fajar)',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF0F4F8),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo & Brand Header
+                  Container(
+                    width: 76,
+                    height: 76,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppConstants.primaryColor, AppConstants.secondaryColor],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppConstants.primaryColor.withValues(alpha: 0.3),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.cell_tower_rounded, color: Colors.white, size: 40),
+                  ),
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    AppConstants.appName,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1B3B59),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Sistem Monitoring & Operasional Instalasi Pelanggan',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Container Login / Pilih Akses Internal
+                  Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(22),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppConstants.primaryColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.lock_person_outlined, color: AppConstants.primaryColor, size: 20),
+                              ),
+                              const SizedBox(width: 10),
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Pilih Akses Pengguna',
+                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    'Khusus Karyawan & Petugas Lapangan',
+                                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 28),
+
+                          // Pilihan Role 1: Admin / Dispatcher
+                          _buildRoleButton(
+                            title: 'Admin / Dispatcher',
+                            subtitle: 'Monitoring 4 status, validasi pendaftaran web, & atur jadwal.',
+                            icon: Icons.dashboard_customize_rounded,
+                            color: AppConstants.primaryColor,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Pilihan Role 2: Teknisi Lapangan
+                          _buildRoleButton(
+                            title: 'Teknisi Lapangan (Field Ops)',
+                            subtitle: 'Monitoring tugas aktif, navigasi Maps, input redaman OPM & foto.',
+                            icon: Icons.engineering_rounded,
+                            color: const Color(0xFF1B3B59),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => TechnicianDashboardScreen(
+                                    technicianName: _selectedTechnicianTeam,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Dropdown Pemilihan Tim Teknisi
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.group_outlined, size: 18, color: Colors.grey),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Pilih Akun Tim:',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _selectedTechnicianTeam,
+                                      isDense: true,
+                                      isExpanded: true,
+                                      style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.bold),
+                                      items: _technicianTeams.map((team) {
+                                        return DropdownMenuItem(value: team, child: Text(team, overflow: TextOverflow.ellipsis));
+                                      }).toList(),
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setState(() => _selectedTechnicianTeam = val);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Catatan Operasional
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue.shade100),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.info_outline, size: 18, color: AppConstants.primaryColor),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Data calon pelanggan baru secara otomatis masuk ke aplikasi ini setiap kali pelanggan mengisi formulir di website pendaftaran resmi PT Mitra Media Data.',
+                            style: TextStyle(fontSize: 11, color: Colors.blue.shade900, height: 1.4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleButton({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: Colors.white, size: 24),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600, height: 1.2),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.arrow_forward_ios_rounded, size: 14, color: color),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+===== FILE: lib/screens/admin/admin_dashboard_screen.dart =====
+import 'package:flutter/material.dart';
+import '../../models/customer_model.dart';
+import '../../services/auth_service.dart';
+import '../../services/customer_repository.dart';
+import '../../utils/constants.dart';
+import '../auth/login_screen.dart';
+import 'report_verification_dialog.dart';
+import 'schedule_dialog.dart';
+
+class AdminDashboardScreen extends StatefulWidget {
+  const AdminDashboardScreen({super.key});
+
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final CustomerRepository _repository = CustomerRepository();
+  final AuthService _authService = AuthService();
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 5, vsync: this);
+
+    // Dengar stream untuk notifikasi calon pelanggan baru dari Web
+    _repository.onNewCustomerAdded.listen((newCustomer) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF0077B6),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 4),
+            content: Row(
+              children: [
+                const Icon(Icons.notifications_active_rounded, color: Colors.amberAccent),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Pendaftaran Baru Masuk dari Website!',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                      Text(
+                        '${newCustomer.fullName} - ${newCustomer.selectedPackage}',
+                        style: const TextStyle(fontSize: 12, color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _confirmLogout() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: Colors.redAccent),
+            SizedBox(width: 10),
+            Text('Konfirmasi Keluar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Apakah Anda yakin ingin keluar dari akun Admin Dispatcher?',
+          style: TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _authService.logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _simulateIncomingWebRegistration() {
+    final sampleNames = ['Rizky Ramadhan', 'Siti Rahmawati', 'Dedi Kurniawan', 'Putri Ayu'];
+    final samplePackages = ['30 Mbps Hemat Rumah', '50 Mbps Super Cepat', '100 Mbps Pro Gamer/Bisnis'];
+    final sampleAddresses = [
+      'Jl. Anggrek No. 15, RT 03/RW 02',
+      'Komplek Permata Blok D-08',
+      'Jl. Sudirman Gg. Melati No. 4',
+      'Perumahan Griya Indah Blok E-11'
+    ];
+
+    final int count = _repository.allCustomers.length + 1;
+    final name = sampleNames[count % sampleNames.length];
+    final pkg = samplePackages[count % samplePackages.length];
+    final addr = sampleAddresses[count % sampleAddresses.length];
+
+    _repository.registerCustomerFromWeb(
+      fullName: '$name (Web)',
+      phoneNumber: '0812${(10000000 + count * 883).toString().substring(0, 8)}',
+      address: addr,
+      selectedPackage: pkg,
+      latitude: -6.200200 + (count * 0.001),
+      longitude: 106.816800 + (count * 0.001),
+      packagePrice: pkg.contains('30') ? 225000 : (pkg.contains('50') ? 320000 : 499000),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentUser = _authService.currentUser;
+
+    return AnimatedBuilder(
+      animation: _repository,
+      builder: (context, _) {
+        final all = _repository.allCustomers;
+        final listMenunggu = _filterList(_repository.getCustomersByStatus(CustomerStatus.menungguJadwal));
+        final listDijadwalkan = _filterList(_repository.getCustomersByStatus(CustomerStatus.dijadwalkan));
+        final listProgres = _filterList(_repository.getCustomersByStatus(CustomerStatus.progresInstalasi));
+        final listSelesai = _filterList(_repository.getCustomersByStatus(CustomerStatus.selesai));
+    final listVerifikasi = _filterList(_repository.getCustomersByStatus(CustomerStatus.menungguVerifikasi));
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF4F7FB),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF0F1E36), // Deep Modern Navy
+            elevation: 0,
+            titleSpacing: 14,
+            title: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF00B4D8), Color(0xFF0077B6)],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.hub_rounded, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        currentUser?.fullName ?? 'Admin Dispatcher',
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Row(
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: const BoxDecoration(
+                              color: Colors.greenAccent,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'Portal Admin • PT Mitra Media Data',
+                            style: TextStyle(fontSize: 10, color: Color(0xFF90E0EF)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                tooltip: 'Simulasikan Data Masuk dari Web',
+                icon: const Icon(Icons.add_to_photos_rounded, color: Color(0xFF90E0EF), size: 22),
+                onPressed: _simulateIncomingWebRegistration,
+              ),
+              IconButton(
+                tooltip: 'Keluar / Logout',
+                icon: const Icon(Icons.logout_rounded, color: Colors.white70, size: 20),
+                onPressed: _confirmLogout,
+              ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(102),
+              child: Container(
+                color: const Color(0xFF0F1E36),
+                child: Column(
+                  children: [
+                    // Search Bar Modern
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      child: Container(
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (val) => setState(() => _searchQuery = val),
+                          style: const TextStyle(fontSize: 12, color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'Cari nama, no HP, alamat, atau tiket...',
+                            hintStyle: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.5)),
+                            prefixIcon: const Icon(Icons.search_rounded, size: 16, color: Colors.white70),
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear_rounded, size: 14, color: Colors.white70),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() => _searchQuery = '');
+                                    },
+                                  )
+                                : null,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Modern Pill TabBar
+                    TabBar(
+                      controller: _tabController,
+                      isScrollable: true,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.white54,
+                      indicatorColor: const Color(0xFF00B4D8),
+                      indicatorWeight: 3,
+                      labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+                      tabs: [
+                        _buildTab('Menunggu', listMenunggu.length, Icons.hourglass_top_rounded, Colors.orange),
+                        _buildTab('Dijadwalkan', listDijadwalkan.length, Icons.event_available_rounded, const Color(0xFF00B4D8)),
+                        _buildTab('Progres', listProgres.length, Icons.engineering_rounded, const Color(0xFF9D4EDD)),
+                        _buildTab('Verifikasi', listVerifikasi.length, Icons.fact_check_rounded, const Color(0xFFD97706)),
+                        _buildTab('Selesai', listSelesai.length, Icons.verified_rounded, Colors.greenAccent),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          body: Column(
+            children: [
+              // Modern Statistics Metric Cards
+              _buildModernMetricCards(all),
+
+              // Daftar Pelanggan per Status
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildCustomerList(listMenunggu, CustomerStatus.menungguJadwal),
+                    _buildCustomerList(listDijadwalkan, CustomerStatus.dijadwalkan),
+                    _buildCustomerList(listProgres, CustomerStatus.progresInstalasi),
+                    _buildCustomerList(listVerifikasi, CustomerStatus.menungguVerifikasi),
+                    _buildCustomerList(listSelesai, CustomerStatus.selesai),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildModernMetricCards(List<CustomerModel> all) {
+    final waiting = _repository.getCustomersByStatus(CustomerStatus.menungguJadwal).length;
+    final scheduled = _repository.getCustomersByStatus(CustomerStatus.dijadwalkan).length;
+    final completed = _repository.getCustomersByStatus(CustomerStatus.selesai).length;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildMetricTile('Total', all.length.toString(), const Color(0xFF0F1E36), Icons.group_outlined)),
+          const SizedBox(width: 8),
+          Expanded(child: _buildMetricTile('Menunggu', waiting.toString(), const Color(0xFFE67E22), Icons.hourglass_empty_rounded)),
+          const SizedBox(width: 8),
+          Expanded(child: _buildMetricTile('Jadwal', scheduled.toString(), const Color(0xFF0077B6), Icons.event_note_rounded)),
+          const SizedBox(width: 8),
+          Expanded(child: _buildMetricTile('Selesai', completed.toString(), const Color(0xFF2EA043), Icons.check_circle_outline_rounded)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricTile(String label, String value, Color color, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 12, color: color),
+              const SizedBox(width: 4),
+              Text(
+                value,
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: color),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(fontSize: 10, color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<CustomerModel> _filterList(List<CustomerModel> list) {
+    if (_searchQuery.trim().isEmpty) return list;
+    final q = _searchQuery.toLowerCase().trim();
+    return list.where((c) {
+      return c.fullName.toLowerCase().contains(q) ||
+          c.phoneNumber.contains(q) ||
+          c.registrationCode.toLowerCase().contains(q) ||
+          c.address.toLowerCase().contains(q);
+    }).toList();
+  }
+
+  Widget _buildTab(String title, int count, IconData icon, Color badgeColor) {
+    return Tab(
+      child: Row(
+        children: [
+          Icon(icon, size: 14),
+          const SizedBox(width: 6),
+          Text(title),
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            decoration: BoxDecoration(
+              color: badgeColor.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '$count',
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: badgeColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomerList(List<CustomerModel> list, CustomerStatus status) {
+    if (list.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(status.icon, size: 48, color: Colors.grey.shade400),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _searchQuery.isNotEmpty
+                  ? 'Tidak ditemukan hasil untuk "$_searchQuery"'
+                  : 'Belum ada data pada status "${status.label}"',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      itemCount: list.length,
+      itemBuilder: (context, index) {
+        final customer = list[index];
+        return _buildCustomerCard(customer);
+      },
+    );
+  }
+
+  Widget _buildCustomerCard(CustomerModel customer) {
+    final bool isPaid = customer.paymentStatus == PaymentStatus.sudahBayar;
+
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black.withValues(alpha: 0.06),
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Row 1: Header Responsif (Kode Registrasi + Badge Bayar + Badge Status)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      // Kode Tiket
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFCBD5E1)),
+                        ),
+                        child: Text(
+                          customer.registrationCode,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Color(0xFF1E293B)),
+                        ),
+                      ),
+
+                      // Badge Status Pembayaran (Belum Bayar vs Lunas)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: isPaid ? const Color(0xFFDCFCE7) : const Color(0xFFFFEDD5),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: isPaid ? const Color(0xFF86EFAC) : const Color(0xFFFDBA74)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isPaid ? Icons.check_circle_rounded : Icons.pending_rounded,
+                              size: 11,
+                              color: isPaid ? const Color(0xFF15803D) : const Color(0xFFC2410C),
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              isPaid ? 'LUNAS' : 'BELUM BAYAR',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: isPaid ? const Color(0xFF15803D) : const Color(0xFFC2410C),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+
+                // Badge Status Lifecycle (Kanan Atas)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: customer.status.color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(customer.status.icon, size: 12, color: customer.status.color),
+                      const SizedBox(width: 4),
+                      Text(
+                        customer.status.label,
+                        style: TextStyle(
+                          color: customer.status.color,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // Row 2: Nama Pelanggan
+            Text(
+              customer.fullName,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+            ),
+            const SizedBox(height: 4),
+
+            // Row 3: Paket & Harga (Dengan Ellipsis agar anti-overflow)
+            Row(
+              children: [
+                const Icon(Icons.wifi_rounded, size: 14, color: Color(0xFF0077B6)),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    '${customer.selectedPackage} • Rp ${customer.packagePrice}',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF0077B6), fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 3),
+
+            // Row 4: Nomor Telepon
+            Row(
+              children: [
+                const Icon(Icons.phone_iphone_rounded, size: 13, color: Colors.grey),
+                const SizedBox(width: 4),
+                Text(customer.phoneNumber, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+              ],
+            ),
+            const SizedBox(height: 4),
+
+            // Row 5: Alamat Pemasangan
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.location_on_outlined, size: 13, color: Colors.redAccent),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    customer.address,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 18),
+
+            // Row 6: Footer Card (Info ODP & Tombol Aksi)
+            Row(
+              children: [
+                // Info Tiang ODP
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: customer.distanceToOdpMeter <= 150
+                          ? const Color(0xFFF0FDF4)
+                          : const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: customer.distanceToOdpMeter <= 150
+                            ? const Color(0xFFBBF7D0)
+                            : const Color(0xFFFDE68A),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.settings_input_antenna_rounded,
+                          size: 13,
+                          color: customer.distanceToOdpMeter <= 150 ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            '${customer.nearestOdpCode} • ${customer.distanceToOdpMeter.toStringAsFixed(0)}m',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: customer.distanceToOdpMeter <= 150 ? const Color(0xFF16A34A) : const Color(0xFFD97706),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Aksi Berdasarkan Status
+                if (customer.status == CustomerStatus.menungguJadwal)
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isPaid ? const Color(0xFF0077B6) : const Color(0xFFE67E22),
+                      foregroundColor: Colors.white,
+                      elevation: 1,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    icon: Icon(isPaid ? Icons.send_rounded : Icons.checklist_rtl_rounded, size: 13),
+                    label: Text(
+                      isPaid ? 'Jadwalkan' : 'Sortir & Cek Bayar',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => ScheduleDialog(customer: customer),
+                      );
+                    },
+                  )
+                else if (customer.status == CustomerStatus.dijadwalkan)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        customer.assignedTechnician ?? "-",
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0077B6)),
+                      ),
+                      Text(
+                        customer.scheduledTimeSlot ?? '',
+                        style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                      ),
+                    ],
+                  )
+                else if (customer.status == CustomerStatus.progresInstalasi)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF9D4EDD).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'Dipasang: ${customer.assignedTechnician ?? "Teknisi"}',
+                      style: const TextStyle(fontSize: 10, color: Color(0xFF9D4EDD), fontWeight: FontWeight.w600),
+                    ),
+                  )
+                else if (customer.status == CustomerStatus.menungguVerifikasi)
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD97706),
+                      foregroundColor: Colors.white,
+                      elevation: 1,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    icon: const Icon(Icons.fact_check_rounded, size: 13),
+                    label: const Text(
+                      'Cek Laporan',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => ReportVerificationDialog(customer: customer),
+                      );
+                    },
+                  )
+                else if (customer.status == CustomerStatus.selesai)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.verified_rounded, size: 14, color: Color(0xFF16A34A)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Redaman: ${customer.opticalAttenuationDbm ?? 0} dBm',
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF16A34A)),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+===== FILE: lib/screens/admin/report_verification_dialog.dart =====
+[Content omitted for brevity, same as previously shown]
+
+===== FILE: lib/screens/admin/schedule_dialog.dart =====
+[Content omitted for brevity, same as previously shown]
+
+===== FILE: lib/screens/auth/login_screen.dart =====
+[Content omitted for brevity, same as previously shown]
+
+===== FILE: lib/screens/technician/technician_dashboard_screen.dart =====
+[Content omitted for brevity, same as previously shown]
+
+===== FILE: lib/screens/technician/smart_quality_check_sheet.dart =====
+[Content omitted for brevity, same as previously shown]
+
+===== FILE: lib/services/auth_service.dart =====
+import '../models/user_model.dart';
+
+class AuthService {
+  UserModel? _currentUser;
+
+  UserModel? get currentUser => _currentUser;
+
+  Future<UserModel?> login(String username, String password) async {
+    // Dummy authentication logic for demo purposes
+    if (username == 'admin' && password == 'admin123') {
+      _currentUser = const UserModel(
+        id: 'user_admin',
+        username: 'admin',
+        password: 'admin123',
+        fullName: 'Admin Dispatcher',
+        role: UserRole.admin,
+        email: 'admin@mitramedia.id',
+      );
+      return _currentUser;
+    }
+    // Simple technician lookup (hardcoded for demo)
+    final technicians = {
+      'tek_alpha': const UserModel(
+        id: 'tech_alpha',
+        username: 'tek_alpha',
+        password: 'tek123',
+        fullName: 'Budi (Tim Alpha)',
+        role: UserRole.technician,
+        teamName: 'Tim Alpha (Budi & Doni)',
+        email: 'budi@mitramedia.id',
+      ),
+      'tek_beta': const UserModel(
+        id: 'tech_beta',
+        username: 'tek_beta',
+        password: 'tek123',
+        fullName: 'Agus (Tim Beta)',
+        role: UserRole.technician,
+        teamName: 'Tim Beta (Agus & Rian)',
+        email: 'agus@mitramedia.id',
+      ),
+    };
+    if (technicians.containsKey(username) && technicians[username]!.password == password) {
+      _currentUser = technicians[username];
+      return _currentUser;
+    }
+    return null;
+  }
+
+  void logout() {
+    _currentUser = null;
+  }
+}
+
+===== FILE: lib/services/customer_repository.dart =====
+[Content omitted for brevity, same as previously shown]
+
+===== FILE: lib/services/geo_calculation_service.dart =====
+import 'models/odp_model.dart';
+
+class GeoCalculationService {
+  // Dummy ODP list - in real scenario this would be fetched from a DB or API
+  static final List<OdpPoint> _odps = [
+    OdpPoint(id: 'odp1', code: 'ODP-MMD-PST-01', locationName: 'Pantai Selatan', latitude: -6.200500, longitude: 106.817100),
+    OdpPoint(id: 'odp2', code: 'ODP-MMD-BRT-02', locationName: 'Batu Rengkung Timur', latitude: -6.210200, longitude: 106.820300),
+    OdpPoint(id: 'odp3', code: 'ODP-MMD-TMR-03', locationName: 'Tanah Merah', latitude: -6.195600, longitude: 106.825800),
+  ];
+
+  /// Find nearest ODP point based on simple Euclidean distance (approximation).
+  static Map<String, Object> findNearestOdp(double lat, double lng) {
+    OdpPoint? nearest;
+    double minDist = double.infinity;
+    for (var odp in _odps) {
+      final dLat = lat - odp.latitude;
+      final dLng = lng - odp.longitude;
+      final distance = (dLat * dLat) + (dLng * dLng);
+      if (distance < minDist) {
+        minDist = distance;
+        nearest = odp;
+      }
+    }
+    // Convert squared distance to approx meters (rough estimate)
+    final distanceMeters = nearest != null ? (minDist.sqrt() * 111139) : 0.0;
+    return {
+      'odp': nearest,
+      'distanceMeters': distanceMeters,
+    };
+  }
+}
+
+===== FILE: lib/utils/constants.dart =====
+import 'package:flutter/material.dart';
+
+class AppConstants {
+  static const String appName = 'PT Mitra Media Data';
+  static const String appSubtitle = 'Sistem Manajemen & Monitoring Instalasi Pelanggan';
+
+  // Warna Utama Brand (Teal & Navy khas ISP modern)
+  static const Color primaryColor = Color(0xFF0077B6); // Modern ISP Blue
+  static const Color secondaryColor = Color(0xFF00B4D8); // Cyan
+  static const Color accentColor = Color(0xFF028090);
+  static const Color backgroundColor = Color(0xFFF4F7FB);
+  static const Color cardColor = Colors.white;
+
+  // Status Warna
+  static const Color statusWaitingColor = Color(0xFFE67E22); // Orange
+  static const Color statusScheduledColor = Color(0xFF0077B6); // Blue
+  static const Color statusProgressColor = Color(0xFF9D4EDD); // Purple
+  static const Color statusVerificationColor = Color(0xFFD97706); // Amber / Yellow
+  static const Color statusCompletedColor = Color(0xFF2EA043); // Green
+  static const Color statusDangerColor = Color(0xFFDC2626); // Red
+}
+
+enum CustomerStatus {
+  menungguJadwal,
+  dijadwalkan,
+  progresInstalasi,
+  menungguVerifikasi, // Laporan dikirim teknisi, menunggu pengecekan Admin
+  selesai,
+}
+
+extension CustomerStatusExtension on CustomerStatus {
+  String get label {
+    switch (this) {
+      case CustomerStatus.menungguJadwal:
+        return 'Menunggu Jadwal';
+      case CustomerStatus.dijadwalkan:
+        return 'Dijadwalkan';
+      case CustomerStatus.progresInstalasi:
+        return 'Progres Instalasi';
+      case CustomerStatus.menungguVerifikasi:
+        return 'Verifikasi Laporan';
+      case CustomerStatus.selesai:
+        return 'Selesai';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case CustomerStatus.menungguJadwal:
+        return AppConstants.statusWaitingColor;
+      case CustomerStatus.dijadwalkan:
+        return AppConstants.statusScheduledColor;
+      case CustomerStatus.progresInstalasi:
+        return AppConstants.statusProgressColor;
+      case CustomerStatus.menungguVerifikasi:
+        return AppConstants.statusVerificationColor;
+      case CustomerStatus.selesai:
+        return AppConstants.statusCompletedColor;
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case CustomerStatus.menungguJadwal:
+        return Icons.hourglass_top_rounded;
+      case CustomerStatus.dijadwalkan:
+        return Icons.event_available_rounded;
+      case CustomerStatus.progresInstalasi:
+        return Icons.engineering_rounded;
+      case CustomerStatus.menungguVerifikasi:
+        return Icons.fact_check_rounded;
+      case CustomerStatus.selesai:
+        return Icons.check_circle_rounded;
+    }
+  }
+}
