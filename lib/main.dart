@@ -24,12 +24,12 @@ class MitraMediaDataApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0077B6),
-          primary: const Color(0xFF0077B6),
-          secondary: const Color(0xFF00B4D8),
+          seedColor: AppConstants.primaryColor,
+          primary: AppConstants.primaryColor,
+          secondary: AppConstants.secondaryColor,
           surface: Colors.white,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF4F7FB),
+        scaffoldBackgroundColor: AppConstants.backgroundColor,
         appBarTheme: const AppBarTheme(
           centerTitle: false,
           elevation: 0,

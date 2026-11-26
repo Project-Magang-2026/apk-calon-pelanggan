@@ -16,7 +16,8 @@ class TechnicianDashboardScreen extends StatefulWidget {
   });
 
   @override
-  State<TechnicianDashboardScreen> createState() => _TechnicianDashboardScreenState();
+  State<TechnicianDashboardScreen> createState() =>
+      _TechnicianDashboardScreenState();
 }
 
 class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
@@ -47,10 +48,16 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
 
     try {
       if (await canLaunchUrl(geoUri)) {
-        final launched = await launchUrl(geoUri, mode: LaunchMode.externalApplication);
+        final launched = await launchUrl(
+          geoUri,
+          mode: LaunchMode.externalApplication,
+        );
         if (launched) return;
       }
-      if (await launchUrl(googleMapsWebUrl, mode: LaunchMode.externalApplication)) {
+      if (await launchUrl(
+        googleMapsWebUrl,
+        mode: LaunchMode.externalApplication,
+      )) {
         return;
       }
     } catch (_) {
@@ -60,7 +67,9 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Tidak dapat membuka Maps. Koordinat: ${job.latitude}, ${job.longitude}'),
+          content: Text(
+            'Tidak dapat membuka Maps. Koordinat: ${job.latitude}, ${job.longitude}',
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -76,7 +85,10 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
           children: [
             Icon(Icons.logout_rounded, color: Colors.redAccent),
             SizedBox(width: 10),
-            Text('Konfirmasi Keluar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              'Konfirmasi Keluar',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         content: Text(
@@ -92,7 +104,9 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () {
               Navigator.pop(ctx);
@@ -136,28 +150,29 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
             return order(a.status).compareTo(order(b.status));
           });
         final revisionJobs = jobs
-            .where((j) => j.needsRevision && j.status == CustomerStatus.progresInstalasi)
+            .where(
+              (j) =>
+                  j.needsRevision &&
+                  j.status == CustomerStatus.progresInstalasi,
+            )
             .toList();
-        final activeJobs = jobs.where((j) => j.status != CustomerStatus.selesai).length;
+        final activeJobs = jobs
+            .where((j) => j.status != CustomerStatus.selesai)
+            .length;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF4F7FB),
+          backgroundColor: AppConstants.backgroundColor,
           appBar: AppBar(
-            backgroundColor: const Color(0xFF1B3B59), // Deep Field Ops Navy
+            backgroundColor: const Color(0xFFE4EAF4), // Platinum Cool Silver
+            foregroundColor: AppConstants.primaryColor,
             elevation: 0,
             titleSpacing: 14,
             title: Row(
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF2A6F97), Color(0xFF014F86)],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.handyman_rounded, color: Colors.white, size: 20),
+                Image.asset(
+                  'assets/images/logo_mimedia.png',
+                  height: 34,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -166,7 +181,11 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                     children: [
                       Text(
                         widget.technicianName,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: AppConstants.primaryColor,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                       Row(
@@ -175,14 +194,18 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                             width: 6,
                             height: 6,
                             decoration: const BoxDecoration(
-                              color: Colors.greenAccent,
+                              color: Colors.green,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 4),
                           const Text(
-                            'Field Ops • PT Mitra Media Data',
-                            style: TextStyle(fontSize: 10, color: Color(0xFF90E0EF)),
+                            'Field Ops Teknisi',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: AppConstants.secondaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -194,7 +217,11 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
             actions: [
               IconButton(
                 tooltip: 'Keluar / Logout',
-                icon: const Icon(Icons.logout_rounded, color: Colors.white70, size: 20),
+                icon: const Icon(
+                  Icons.logout_rounded,
+                  color: AppConstants.secondaryColor,
+                  size: 20,
+                ),
                 onPressed: _confirmLogout,
               ),
             ],
@@ -203,7 +230,10 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
             children: [
               // Banner Info Tugas Hari Ini
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 color: Colors.white,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -213,21 +243,35 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                       children: [
                         const Text(
                           'Daftar Penugasan Instalasi',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
                         ),
                         Text(
                           'Selesaikan penarikan kabel & input redaman optik',
-                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: activeJobs > 0 ? const Color(0xFFE0F2FE) : const Color(0xFFF1F5F9),
+                        color: activeJobs > 0
+                            ? const Color(0xFFE0F2FE)
+                            : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: activeJobs > 0 ? const Color(0xFF7DD3FC) : Colors.transparent,
+                          color: activeJobs > 0
+                              ? const Color(0xFF7DD3FC)
+                              : Colors.transparent,
                         ),
                       ),
                       child: Row(
@@ -235,7 +279,9 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                           Icon(
                             Icons.assignment_outlined,
                             size: 14,
-                            color: activeJobs > 0 ? const Color(0xFF0284C7) : Colors.grey,
+                            color: activeJobs > 0
+                                ? const Color(0xFF0284C7)
+                                : Colors.grey,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -243,7 +289,9 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
-                              color: activeJobs > 0 ? const Color(0xFF0284C7) : Colors.grey,
+                              color: activeJobs > 0
+                                  ? const Color(0xFF0284C7)
+                                  : Colors.grey,
                             ),
                           ),
                         ],
@@ -259,12 +307,18 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                 color: Colors.white,
                 child: TabBar(
                   controller: _tabController,
-                  labelColor: const Color(0xFF1B3B59),
+                  labelColor: AppConstants.primaryColor,
                   unselectedLabelColor: Colors.grey.shade600,
-                  indicatorColor: const Color(0xFF0077B6),
+                  indicatorColor: AppConstants.secondaryColor,
                   indicatorWeight: 3,
-                  labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                  labelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                   tabs: [
                     Tab(
                       child: Row(
@@ -278,7 +332,10 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFE0F2FE),
                               borderRadius: BorderRadius.circular(10),
@@ -307,7 +364,10 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: revisionJobs.isNotEmpty
                                   ? const Color(0xFFFEE2E2)
@@ -384,7 +444,11 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
             const SizedBox(height: 12),
             Text(
               emptyTitle,
-              style: const TextStyle(color: Color(0xFF1E293B), fontSize: 14, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Color(0xFF1E293B),
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Padding(
@@ -408,7 +472,8 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
   }
 
   Widget _buildJobCard(CustomerModel job) {
-    final bool isRevision = job.needsRevision && job.status == CustomerStatus.progresInstalasi;
+    final bool isRevision =
+        job.needsRevision && job.status == CustomerStatus.progresInstalasi;
 
     return Card(
       elevation: 2,
@@ -440,17 +505,28 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.access_time_rounded, size: 14, color: Colors.orange),
+                          const Icon(
+                            Icons.access_time_rounded,
+                            size: 14,
+                            color: Colors.orange,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             job.scheduledTimeSlot ?? 'Hari Ini',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.orange),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              color: Colors.orange,
+                            ),
                           ),
                         ],
                       ),
                       // Badge Pembayaran Terverifikasi Lunas
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFDCFCE7),
                           borderRadius: BorderRadius.circular(4),
@@ -459,9 +535,20 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.check_rounded, size: 10, color: Color(0xFF15803D)),
+                            Icon(
+                              Icons.check_rounded,
+                              size: 10,
+                              color: Color(0xFF15803D),
+                            ),
                             SizedBox(width: 3),
-                            Text('LUNAS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF15803D))),
+                            Text(
+                              'LUNAS',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF15803D),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -470,7 +557,10 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                 ),
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: isRevision
                         ? const Color(0xFFFEE2E2)
@@ -483,13 +573,17 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                       Icon(
                         isRevision ? Icons.edit_note_rounded : job.status.icon,
                         size: 12,
-                        color: isRevision ? const Color(0xFFDC2626) : job.status.color,
+                        color: isRevision
+                            ? const Color(0xFFDC2626)
+                            : job.status.color,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         isRevision ? 'Perlu Revisi' : job.status.label,
                         style: TextStyle(
-                          color: isRevision ? const Color(0xFFDC2626) : job.status.color,
+                          color: isRevision
+                              ? const Color(0xFFDC2626)
+                              : job.status.color,
                           fontWeight: FontWeight.bold,
                           fontSize: 10,
                         ),
@@ -504,20 +598,32 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
             // Nama Pelanggan
             Text(
               job.fullName,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A),
+              ),
             ),
             const SizedBox(height: 4),
 
             // Paket Internet & Telepon (Anti-overflow)
             Row(
               children: [
-                const Icon(Icons.wifi_rounded, size: 14, color: Color(0xFF0077B6)),
+                const Icon(
+                  Icons.wifi_rounded,
+                  size: 14,
+                  color: Color(0xFF0077B6),
+                ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     job.selectedPackage,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0077B6)),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF0077B6),
+                    ),
                   ),
                 ),
               ],
@@ -525,9 +631,16 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
             const SizedBox(height: 3),
             Row(
               children: [
-                const Icon(Icons.phone_iphone_rounded, size: 13, color: Colors.grey),
+                const Icon(
+                  Icons.phone_iphone_rounded,
+                  size: 13,
+                  color: Colors.grey,
+                ),
                 const SizedBox(width: 4),
-                Text(job.phoneNumber, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+                Text(
+                  job.phoneNumber,
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                ),
               ],
             ),
             const SizedBox(height: 6),
@@ -536,7 +649,11 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.location_on_outlined, size: 14, color: Colors.redAccent),
+                const Icon(
+                  Icons.location_on_outlined,
+                  size: 14,
+                  color: Colors.redAccent,
+                ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
@@ -561,12 +678,20 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.router_rounded, size: 14, color: Color(0xFF0077B6)),
+                      const Icon(
+                        Icons.router_rounded,
+                        size: 14,
+                        color: Color(0xFF0077B6),
+                      ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           'Titik Sambung: ${job.nearestOdpCode} (~${job.distanceToOdpMeter.toStringAsFixed(0)} meter)',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0077B6)),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF0077B6),
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -576,7 +701,11 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                     const SizedBox(height: 4),
                     Text(
                       'Catatan Admin: ${job.adminNotes}',
-                      style: TextStyle(fontSize: 11, color: Colors.grey.shade800, fontStyle: FontStyle.italic),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade800,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ],
                 ],
@@ -599,7 +728,11 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.report_problem_rounded, size: 14, color: Color(0xFFDC2626)),
+                        Icon(
+                          Icons.report_problem_rounded,
+                          size: 14,
+                          color: Color(0xFFDC2626),
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'Catatan Revisi dari Admin',
@@ -613,10 +746,14 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      (job.adminFeedback != null && job.adminFeedback!.isNotEmpty)
+                      (job.adminFeedback != null &&
+                              job.adminFeedback!.isNotEmpty)
                           ? job.adminFeedback!
                           : 'Mohon periksa ulang hasil instalasi & kirim laporan kembali.',
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF7F1D1D)),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF7F1D1D),
+                      ),
                     ),
                   ],
                 ),
@@ -631,11 +768,19 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF0077B6),
                     side: const BorderSide(color: Color(0xFF90E0EF)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                   ),
                   icon: const Icon(Icons.directions_rounded, size: 15),
-                  label: const Text('Buka Maps', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                  label: const Text(
+                    'Buka Maps',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
                   onPressed: () => _openMaps(job),
                 ),
                 const Spacer(),
@@ -647,16 +792,29 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                       backgroundColor: const Color(0xFF9D4EDD),
                       foregroundColor: Colors.white,
                       elevation: 1,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                     ),
                     icon: const Icon(Icons.play_arrow_rounded, size: 16),
-                    label: const Text('Mulai Instalasi', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'Mulai Instalasi',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     onPressed: () {
                       _repository.startInstallation(job.id);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Pekerjaan instalasi untuk ${job.fullName} dimulai!'),
+                          content: Text(
+                            'Pekerjaan instalasi untuk ${job.fullName} dimulai!',
+                          ),
                           backgroundColor: const Color(0xFF9D4EDD),
                         ),
                       );
@@ -665,23 +823,40 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                 else if (job.status == CustomerStatus.progresInstalasi)
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isRevision ? const Color(0xFFDC2626) : const Color(0xFF2EA043),
+                      backgroundColor: isRevision
+                          ? const Color(0xFFDC2626)
+                          : const Color(0xFF2EA043),
                       foregroundColor: Colors.white,
                       elevation: 1,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                     ),
-                    icon: Icon(isRevision ? Icons.edit_note_rounded : Icons.send_rounded, size: 16),
+                    icon: Icon(
+                      isRevision ? Icons.edit_note_rounded : Icons.send_rounded,
+                      size: 16,
+                    ),
                     label: Text(
-                      isRevision ? 'Perbaiki & Kirim Ulang' : 'Input Redaman & Kirim',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      isRevision
+                          ? 'Perbaiki & Kirim Ulang'
+                          : 'Input Redaman & Kirim',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
                         ),
                         builder: (_) => SmartQualityCheckSheet(customer: job),
                       );
@@ -689,7 +864,10 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                   )
                 else if (job.status == CustomerStatus.menungguVerifikasi)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEF3C7),
                       borderRadius: BorderRadius.circular(8),
@@ -698,18 +876,29 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.hourglass_bottom_rounded, size: 13, color: Color(0xFFB45309)),
+                        Icon(
+                          Icons.hourglass_bottom_rounded,
+                          size: 13,
+                          color: Color(0xFFB45309),
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'Menunggu Verifikasi Admin',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFB45309)),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFB45309),
+                          ),
                         ),
                       ],
                     ),
                   )
                 else if (job.status == CustomerStatus.selesai)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFDCFCE7),
                       borderRadius: BorderRadius.circular(8),
@@ -718,11 +907,19 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.verified_rounded, size: 13, color: Color(0xFF15803D)),
+                        const Icon(
+                          Icons.verified_rounded,
+                          size: 13,
+                          color: Color(0xFF15803D),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Selesai (${job.opticalAttenuationDbm} dBm)',
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF15803D),
+                          ),
                         ),
                       ],
                     ),

@@ -93,8 +93,16 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1E36), // Deep Telecom Navy
-      body: SafeArea(
+      backgroundColor: const Color(0xFFE4EAF4), // Platinum Cool Silver
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFE4EAF4), Color(0xFFD5DFEE)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -257,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               height: 48,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0077B6),
+                                  backgroundColor: AppConstants.primaryColor,
                                   foregroundColor: Colors.white,
                                   elevation: 2,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -321,12 +329,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     '© 2026 PT Mitra Media Data • Sistem Operasional Lapangan FTTH',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.6)),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppConstants.primaryColor.withValues(alpha: 0.8),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
+        ),
         ),
       ),
     );
@@ -335,46 +348,28 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildBrandHeader() {
     return Column(
       children: [
+        Image.asset(
+          'assets/images/logo_mimedia.png',
+          height: 82,
+          fit: BoxFit.contain,
+        ),
+        const SizedBox(height: 12),
         Container(
-          width: 72,
-          height: 72,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF00B4D8), Color(0xFF0077B6)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(22),
+            color: AppConstants.secondaryColor,
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF00B4D8).withValues(alpha: 0.35),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+                color: AppConstants.secondaryColor.withValues(alpha: 0.25),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
-          child: const Icon(Icons.cell_tower_rounded, color: Colors.white, size: 38),
-        ),
-        const SizedBox(height: 14),
-        const Text(
-          AppConstants.appName,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 0.8,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-          ),
           child: const Text(
             'FTTH Monitoring & Installation System',
-            style: TextStyle(fontSize: 11, color: Color(0xFF90E0EF), fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -452,7 +447,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? const Color(0xFF0077B6) : Colors.grey.shade600,
+              color: isSelected ? AppConstants.primaryColor : Colors.grey.shade600,
             ),
             const SizedBox(width: 6),
             Text(
@@ -460,7 +455,7 @@ class _LoginScreenState extends State<LoginScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? const Color(0xFF0077B6) : Colors.grey.shade600,
+                color: isSelected ? AppConstants.primaryColor : Colors.grey.shade600,
               ),
             ),
           ],

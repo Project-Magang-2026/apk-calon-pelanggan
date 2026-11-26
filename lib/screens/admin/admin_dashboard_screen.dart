@@ -155,23 +155,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     final listVerifikasi = _filterList(_repository.getCustomersByStatus(CustomerStatus.menungguVerifikasi));
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF4F7FB),
+          backgroundColor: AppConstants.backgroundColor,
           appBar: AppBar(
-            backgroundColor: const Color(0xFF0F1E36), // Deep Modern Navy
+            backgroundColor: const Color(0xFFE4EAF4), // Platinum Cool Silver
+            foregroundColor: AppConstants.primaryColor,
             elevation: 0,
             titleSpacing: 14,
             title: Row(
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF00B4D8), Color(0xFF0077B6)],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.hub_rounded, color: Colors.white, size: 20),
+                Image.asset(
+                  'assets/images/logo_mimedia.png',
+                  height: 34,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -180,7 +175,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     children: [
                       Text(
                         currentUser?.fullName ?? 'Admin Dispatcher',
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: AppConstants.primaryColor,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                       Row(
@@ -189,14 +188,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             width: 6,
                             height: 6,
                             decoration: const BoxDecoration(
-                              color: Colors.greenAccent,
+                              color: Colors.green,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 4),
                           const Text(
-                            'Portal Admin • PT Mitra Media Data',
-                            style: TextStyle(fontSize: 10, color: Color(0xFF90E0EF)),
+                            'Portal Admin',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: AppConstants.secondaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -208,42 +211,47 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             actions: [
               IconButton(
                 tooltip: 'Simulasikan Data Masuk dari Web',
-                icon: const Icon(Icons.add_to_photos_rounded, color: Color(0xFF90E0EF), size: 22),
+                icon: const Icon(Icons.add_to_photos_rounded, color: AppConstants.primaryColor, size: 22),
                 onPressed: _simulateIncomingWebRegistration,
               ),
               IconButton(
                 tooltip: 'Keluar / Logout',
-                icon: const Icon(Icons.logout_rounded, color: Colors.white70, size: 20),
+                icon: const Icon(Icons.logout_rounded, color: AppConstants.secondaryColor, size: 20),
                 onPressed: _confirmLogout,
               ),
             ],
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(102),
               child: Container(
-                color: const Color(0xFF0F1E36),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE4EAF4), // Senada & soft menyatu dengan header atas
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFD0DAEC), width: 1),
+                  ),
+                ),
                 child: Column(
                   children: [
-                    // Search Bar Modern
+                    // Search Bar Modern Soft
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       child: Container(
                         height: 38,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: Colors.white.withValues(alpha: 0.92),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                          border: Border.all(color: const Color(0xFFCBD5E1)),
                         ),
                         child: TextField(
                           controller: _searchController,
                           onChanged: (val) => setState(() => _searchQuery = val),
-                          style: const TextStyle(fontSize: 12, color: Colors.white),
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B)),
                           decoration: InputDecoration(
                             hintText: 'Cari nama, no HP, alamat, atau tiket...',
-                            hintStyle: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.5)),
-                            prefixIcon: const Icon(Icons.search_rounded, size: 16, color: Colors.white70),
+                            hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                            prefixIcon: const Icon(Icons.search_rounded, size: 16, color: AppConstants.primaryColor),
                             suffixIcon: _searchQuery.isNotEmpty
                                 ? IconButton(
-                                    icon: const Icon(Icons.clear_rounded, size: 14, color: Colors.white70),
+                                    icon: const Icon(Icons.clear_rounded, size: 14, color: Color(0xFF64748B)),
                                     onPressed: () {
                                       _searchController.clear();
                                       setState(() => _searchQuery = '');
@@ -257,22 +265,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       ),
                     ),
 
-                    // Modern Pill TabBar
+                    // Modern Pill TabBar Soft
                     TabBar(
                       controller: _tabController,
                       isScrollable: true,
-                      labelColor: Colors.white,
-                      unselectedLabelColor: Colors.white54,
-                      indicatorColor: const Color(0xFF00B4D8),
+                      labelColor: AppConstants.primaryColor,
+                      unselectedLabelColor: const Color(0xFF64748B),
+                      indicatorColor: AppConstants.secondaryColor,
                       indicatorWeight: 3,
                       labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+                      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
                       tabs: [
-                        _buildTab('Menunggu', listMenunggu.length, Icons.hourglass_top_rounded, Colors.orange),
-                        _buildTab('Dijadwalkan', listDijadwalkan.length, Icons.event_available_rounded, const Color(0xFF00B4D8)),
-                        _buildTab('Progres', listProgres.length, Icons.engineering_rounded, const Color(0xFF9D4EDD)),
-                        _buildTab('Verifikasi', listVerifikasi.length, Icons.fact_check_rounded, const Color(0xFFD97706)),
-                        _buildTab('Selesai', listSelesai.length, Icons.verified_rounded, Colors.greenAccent),
+                        _buildTab('Menunggu', listMenunggu.length, Icons.hourglass_top_rounded, const Color(0xFFD97706)),
+                        _buildTab('Dijadwalkan', listDijadwalkan.length, Icons.event_available_rounded, const Color(0xFF0284C7)),
+                        _buildTab('Progres', listProgres.length, Icons.engineering_rounded, const Color(0xFF7C3AED)),
+                        _buildTab('Verifikasi', listVerifikasi.length, Icons.fact_check_rounded, const Color(0xFFB45309)),
+                        _buildTab('Selesai', listSelesai.length, Icons.verified_rounded, const Color(0xFF15803D)),
                       ],
                     ),
                   ],

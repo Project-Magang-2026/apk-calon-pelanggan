@@ -4,11 +4,11 @@ class AppConstants {
   static const String appName = 'PT Mitra Media Data';
   static const String appSubtitle = 'Sistem Manajemen & Monitoring Instalasi Pelanggan';
 
-  // Warna Utama Brand (Teal & Navy khas ISP modern)
-  static const Color primaryColor = Color(0xFF0077B6); // Modern ISP Blue
-  static const Color secondaryColor = Color(0xFF00B4D8); // Cyan
-  static const Color accentColor = Color(0xFF028090);
-  static const Color backgroundColor = Color(0xFFF4F7FB);
+  // Warna Utama Brand (Mi-Media: Deep Indigo/Navy & Merah khas logo)
+  static const Color primaryColor = Color(0xFF1E227A); // Deep Indigo ("Mi-")
+  static const Color secondaryColor = Color(0xFFD9141C); // Brand Red ("Media")
+  static const Color accentColor = Color(0xFF2D34A8); // Bright Indigo
+  static const Color backgroundColor = Color(0xFFF5F7FC);
   static const Color cardColor = Colors.white;
 
   // Status Warna
