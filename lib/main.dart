@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'screens/auth/login_screen.dart';
+import 'services/customer_repository.dart';
+import 'services/firebase_bootstrap.dart';
 import 'utils/constants.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final firebaseReady = await FirebaseBootstrap.init();
+  if (firebaseReady) {
+    CustomerRepository().enableFirebaseSync();
+  }
   runApp(const MitraMediaDataApp());
 }
 

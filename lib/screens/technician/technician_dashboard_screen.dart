@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/customer_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/customer_repository.dart';
@@ -34,6 +35,36 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _openMaps(CustomerModel job) async {
+    final googleMapsWebUrl = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=${job.latitude},${job.longitude}',
+    );
+    final geoUri = Uri.parse(
+      'geo:${job.latitude},${job.longitude}?q=${job.latitude},${job.longitude}(${Uri.encodeComponent(job.fullName)})',
+    );
+
+    try {
+      if (await canLaunchUrl(geoUri)) {
+        final launched = await launchUrl(geoUri, mode: LaunchMode.externalApplication);
+        if (launched) return;
+      }
+      if (await launchUrl(googleMapsWebUrl, mode: LaunchMode.externalApplication)) {
+        return;
+      }
+    } catch (_) {
+      // Ditangani oleh pesan error di bawah
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Tidak dapat membuka Maps. Koordinat: ${job.latitude}, ${job.longitude}'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   void _confirmLogout() {
@@ -605,14 +636,7 @@ class _TechnicianDashboardScreenState extends State<TechnicianDashboardScreen>
                   ),
                   icon: const Icon(Icons.directions_rounded, size: 15),
                   label: const Text('Buka Maps', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Membuka navigasi Maps ke titik: ${job.latitude}, ${job.longitude}'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
+                  onPressed: () => _openMaps(job),
                 ),
                 const Spacer(),
 

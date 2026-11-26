@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/customer_model.dart';
 import '../utils/constants.dart';
+import 'firebase_bootstrap.dart';
+import 'firebase_customer_service.dart';
 import 'geo_calculation_service.dart';
 
 class CustomerRepository extends ChangeNotifier {
@@ -14,6 +16,36 @@ class CustomerRepository extends ChangeNotifier {
   }
 
   final List<CustomerModel> _customers = [];
+  final FirebaseCustomerService _firebaseService = FirebaseCustomerService();
+  StreamSubscription<List<CustomerModel>>? _firestoreSubscription;
+
+  bool get isUsingFirebase => FirebaseBootstrap.isInitialized;
+
+  /// Aktifkan sinkronisasi real-time dengan Cloud Firestore jika Firebase siap
+  void enableFirebaseSync() {
+    if (!isUsingFirebase) return;
+    _firestoreSubscription?.cancel();
+    _firestoreSubscription = _firebaseService.watchCustomers().listen(
+      (remoteCustomers) {
+        if (remoteCustomers.isNotEmpty) {
+          _customers
+            ..clear()
+            ..addAll(remoteCustomers);
+          notifyListeners();
+        }
+      },
+      onError: (e) {
+        debugPrint('[CustomerRepository] Firestore sync error: $e');
+      },
+    );
+  }
+
+  void _syncCustomerToFirebase(CustomerModel customer) {
+    if (!isUsingFirebase) return;
+    _firebaseService.upsertCustomer(customer).catchError((e) {
+      debugPrint('[CustomerRepository] Gagal simpan ke Firestore: $e');
+    });
+  }
 
   // Stream controller untuk mendeteksi data baru (Simulasi Firebase Real-time dari Web)
   final StreamController<CustomerModel> _newCustomerStreamController =
@@ -88,6 +120,7 @@ class CustomerRepository extends ChangeNotifier {
 
     _customers.insert(0, newCustomer);
     _newCustomerStreamController.add(newCustomer);
+    _syncCustomerToFirebase(newCustomer);
     notifyListeners();
 
     return newCustomer;
@@ -112,6 +145,7 @@ class CustomerRepository extends ChangeNotifier {
         paymentMethod: paymentMethod,
         paymentDate: paymentStatus == PaymentStatus.sudahBayar ? DateTime.now() : null,
       );
+      _syncCustomerToFirebase(_customers[index]);
       notifyListeners();
     }
   }
@@ -153,6 +187,7 @@ class CustomerRepository extends ChangeNotifier {
         adminNotes: adminNotes,
         needsRevision: false,
       );
+      _syncCustomerToFirebase(_customers[index]);
       notifyListeners();
       return true;
     }
@@ -166,6 +201,7 @@ class CustomerRepository extends ChangeNotifier {
       _customers[index] = _customers[index].copyWith(
         status: CustomerStatus.progresInstalasi,
       );
+      _syncCustomerToFirebase(_customers[index]);
       notifyListeners();
     }
   }
@@ -185,7 +221,7 @@ class CustomerRepository extends ChangeNotifier {
         return false; // Redaman tidak memenuhi standar ISP
       }
 
-      _customers[index] = _customers[index].copyWith(
+      final updatedCustomer = _customers[index].copyWith(
         status: CustomerStatus.menungguVerifikasi,
         modemSerialNumber: modemSerialNumber,
         odpPortUsed: odpPortUsed,
@@ -195,6 +231,35 @@ class CustomerRepository extends ChangeNotifier {
         reportSubmittedAt: DateTime.now(),
         needsRevision: false,
       );
+      _customers[index] = updatedCustomer;
+      _syncCustomerToFirebase(updatedCustomer);
+
+      if (isUsingFirebase &&
+          installationPhotoUrl != null &&
+          !installationPhotoUrl.startsWith('http')) {
+        _firebaseService
+            .uploadInstallationPhoto(
+          customerId: customerId,
+          localPath: installationPhotoUrl,
+        )
+            .then((remoteUrl) {
+          if (remoteUrl != null && remoteUrl != installationPhotoUrl) {
+            final latestIdx = _customers.indexWhere((c) => c.id == customerId);
+            if (latestIdx != -1) {
+              _customers[latestIdx] = _customers[latestIdx].copyWith(
+                installationPhotoUrl: remoteUrl,
+              );
+              _firebaseService.updateFields(customerId, {
+                'installationPhotoUrl': remoteUrl,
+              });
+              notifyListeners();
+            }
+          }
+        }).catchError((e) {
+          debugPrint('[CustomerRepository] Gagal upload foto ke Storage: $e');
+        });
+      }
+
       notifyListeners();
       return true;
     }
@@ -211,6 +276,7 @@ class CustomerRepository extends ChangeNotifier {
         needsRevision: false,
         completedAt: DateTime.now(),
       );
+      _syncCustomerToFirebase(_customers[index]);
       notifyListeners();
     }
   }
@@ -224,6 +290,7 @@ class CustomerRepository extends ChangeNotifier {
         adminFeedback: revisionReason,
         needsRevision: true,
       );
+      _syncCustomerToFirebase(_customers[index]);
       notifyListeners();
     }
   }

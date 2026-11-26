@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../utils/constants.dart';
 
 enum PaymentStatus {
@@ -156,5 +157,90 @@ class CustomerModel {
   bool get isAttenuationAcceptable {
     if (opticalAttenuationDbm == null) return false;
     return opticalAttenuationDbm! >= -25.0 && opticalAttenuationDbm! <= -15.0;
+  }
+
+  /// Konversi model ke Map untuk Cloud Firestore
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'registrationCode': registrationCode,
+      'fullName': fullName,
+      'phoneNumber': phoneNumber,
+      'address': address,
+      'selectedPackage': selectedPackage,
+      'latitude': latitude,
+      'longitude': longitude,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'status': status.name,
+      'nearestOdpCode': nearestOdpCode,
+      'distanceToOdpMeter': distanceToOdpMeter,
+      'isPackageVerified': isPackageVerified,
+      'paymentStatus': paymentStatus.name,
+      'paymentMethod': paymentMethod,
+      'packagePrice': packagePrice,
+      'paymentDate': paymentDate != null ? Timestamp.fromDate(paymentDate!) : null,
+      'scheduledDate': scheduledDate != null ? Timestamp.fromDate(scheduledDate!) : null,
+      'scheduledTimeSlot': scheduledTimeSlot,
+      'assignedTechnician': assignedTechnician,
+      'adminNotes': adminNotes,
+      'modemSerialNumber': modemSerialNumber,
+      'odpPortUsed': odpPortUsed,
+      'opticalAttenuationDbm': opticalAttenuationDbm,
+      'installationPhotoUrl': installationPhotoUrl,
+      'reportSubmittedAt': reportSubmittedAt != null ? Timestamp.fromDate(reportSubmittedAt!) : null,
+      'adminFeedback': adminFeedback,
+      'needsRevision': needsRevision,
+      'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+    };
+  }
+
+  /// Buat model dari dokumen Cloud Firestore
+  factory CustomerModel.fromMap(Map<String, dynamic> map, {String? id}) {
+    return CustomerModel(
+      id: id ?? (map['id'] as String? ?? ''),
+      registrationCode: map['registrationCode'] as String? ?? '',
+      fullName: map['fullName'] as String? ?? '',
+      phoneNumber: map['phoneNumber'] as String? ?? '',
+      address: map['address'] as String? ?? '',
+      selectedPackage: map['selectedPackage'] as String? ?? '30 Mbps Hemat Rumah',
+      latitude: (map['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (map['longitude'] as num?)?.toDouble() ?? 0.0,
+      createdAt: _parseDateTime(map['createdAt']) ?? DateTime.now(),
+      status: CustomerStatus.values.firstWhere(
+        (s) => s.name == map['status'],
+        orElse: () => CustomerStatus.menungguJadwal,
+      ),
+      nearestOdpCode: map['nearestOdpCode'] as String? ?? 'ODP-MANUAL-CHECK',
+      distanceToOdpMeter: (map['distanceToOdpMeter'] as num?)?.toDouble() ?? 0.0,
+      isPackageVerified: map['isPackageVerified'] as bool? ?? false,
+      paymentStatus: PaymentStatus.values.firstWhere(
+        (p) => p.name == map['paymentStatus'],
+        orElse: () => PaymentStatus.belumBayar,
+      ),
+      paymentMethod: map['paymentMethod'] as String?,
+      packagePrice: (map['packagePrice'] as num?)?.toInt() ?? 320000,
+      paymentDate: _parseDateTime(map['paymentDate']),
+      scheduledDate: _parseDateTime(map['scheduledDate']),
+      scheduledTimeSlot: map['scheduledTimeSlot'] as String?,
+      assignedTechnician: map['assignedTechnician'] as String?,
+      adminNotes: map['adminNotes'] as String?,
+      modemSerialNumber: map['modemSerialNumber'] as String?,
+      odpPortUsed: map['odpPortUsed'] as String?,
+      opticalAttenuationDbm: (map['opticalAttenuationDbm'] as num?)?.toDouble(),
+      installationPhotoUrl: map['installationPhotoUrl'] as String?,
+      reportSubmittedAt: _parseDateTime(map['reportSubmittedAt']),
+      adminFeedback: map['adminFeedback'] as String?,
+      needsRevision: map['needsRevision'] as bool? ?? false,
+      completedAt: _parseDateTime(map['completedAt']),
+    );
+  }
+
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value);
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    return null;
   }
 }
