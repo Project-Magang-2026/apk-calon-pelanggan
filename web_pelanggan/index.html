@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi-Media • Pendaftaran & Cek Jadwal Pemasangan</title>
+  <style>
+    :root {
+      --primary: #1E227A;
+      --secondary: #D9141C;
+      --platinum: #E4EAF4;
+      --platinum-dark: #D5DFEE;
+      --bg: #F5F7FC;
+      --text: #0F172A;
+      --muted: #64748B;
+      --border: #CBD5E1;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, var(--platinum) 0%, var(--bg) 320px);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      background: var(--platinum);
+      border-bottom: 1px solid #D0DAEC;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 0;
+    }
+    .brand-title span { color: var(--secondary); }
+    .brand-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .container {
+      max-width: 520px;
+      margin: 24px auto;
+      padding: 0 16px 40px;
+    }
+    .tabs {
+      display: flex;
+      background: #E2E8F0;
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px 12px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 4px 16px rgba(30, 34, 122, 0.06);
+    }
+    .hidden { display: none; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      margin-top: 12px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+      background: #F8FAFC;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    .row > div { flex: 1; }
+    .btn {
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-outline {
+      background: #fff;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      margin-top: 8px;
+      padding: 9px;
+      font-size: 12px;
+    }
+    .result-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #BFDBFE;
+      background: #EFF6FF;
+      font-size: 13px;
+    }
+    .result-box.error {
+      border-color: #FCA5A5;
+      background: #FEF2F2;
+      color: #991B1B;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-waiting { background: #FEF3C7; color: #B45309; }
+    .badge-scheduled { background: #DCFCE7; color: #15803D; }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="brand-title">Mi-<span>Media</span> • PT Mitra Media Data</p>
+    <div class="brand-sub">Portal Pendaftaran & Cek Jadwal Pemasangan Internet</div>
+  </header>
+
+  <main class="container">
+    <div class="tabs">
+      <button id="tabDaftar" class="tab-btn active" type="button">Daftar Pemasangan</button>
+      <button id="tabCek" class="tab-btn" type="button">Cek Jadwal</button>
+    </div>
+
+    <!-- FORM PENDAFTARAN BARU -->
+    <section id="panelDaftar" class="card">
+      <h3 style="margin:0 0 4px; color:var(--primary);">Formulir Pemasangan Baru</h3>
+      <p style="margin:0 0 12px; font-size:12px; color:var(--muted);">
+        Isi data Anda dengan benar. Admin akan memverifikasi dan menjadwalkan pemasangan.
+      </p>
+
+      <form id="registerForm">
+        <label for="fullName">Nama Lengkap</label>
+        <input id="fullName" type="text" placeholder="Contoh: Bambang Sutrisno" required />
+
+        <label for="phoneNumber">Nomor HP / WhatsApp</label>
+        <input id="phoneNumber" type="tel" placeholder="Contoh: 081234567890" required />
+
+        <label for="address">Alamat Lengkap Pemasangan</label>
+        <textarea id="address" rows="2" placeholder="Jl. Merdeka No. 45, RT/RW, Kelurahan..." required></textarea>
+
+        <label for="packageSelect">Pilihan Paket Internet</label>
+        <select id="packageSelect">
+          <option value="30 Mbps Hemat Rumah|225000">30 Mbps Hemat Rumah — Rp 225.000/bln</option>
+          <option value="50 Mbps Super Cepat|320000" selected>50 Mbps Super Cepat — Rp 320.000/bln</option>
+          <option value="100 Mbps Pro Gamer/Bisnis|499000">100 Mbps Pro Gamer/Bisnis — Rp 499.000/bln</option>
+        </select>
+
+        <div class="row">
+          <div>
+            <label for="latitude">Latitude</label>
+            <input id="latitude" type="number" step="any" value="-6.200500" required />
+          </div>
+          <div>
+            <label for="longitude">Longitude</label>
+            <input id="longitude" type="number" step="any" value="106.817100" required />
+          </div>
+        </div>
+        <button id="btnGeo" class="btn btn-outline" type="button">Gunakan Lokasi GPS Saya</button>
+
+        <button class="btn btn-primary" type="submit">Kirim Pendaftaran</button>
+      </form>
+
+      <div id="registerResult" class="result-box hidden"></div>
+    </section>
+
+    <!-- CEK JADWAL PEMASANGAN -->
+    <section id="panelCek" class="card hidden">
+      <h3 style="margin:0 0 4px; color:var(--primary);">Cek Jadwal Pemasangan</h3>
+      <p style="margin:0 0 12px; font-size:12px; color:var(--muted);">
+        Masukkan Kode Registrasi dan Nomor HP untuk melihat status dan jadwal pemasangan Anda.
+      </p>
+
+      <form id="checkForm">
+        <label for="checkCode">Kode Registrasi</label>
+        <input id="checkCode" type="text" placeholder="Contoh: MMD-202611-001" required />
+
+        <label for="checkPhone">Nomor HP</label>
+        <input id="checkPhone" type="tel" placeholder="Contoh: 081234567890" required />
+
+        <button class="btn btn-primary" type="submit">Cek Jadwal Sekarang</button>
+      </form>
+
+      <div id="checkResult" class="result-box hidden"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

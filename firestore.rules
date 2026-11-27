@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /customers/{customerId} {
+      // Pengunjung Web boleh mendaftar baru dengan status awal wajib menungguJadwal & belumBayar
+      allow create: if request.resource.data.status == 'menungguJadwal'
+                    && request.resource.data.paymentStatus == 'belumBayar'
+                    && request.resource.data.fullName is string
+                    && request.resource.data.phoneNumber is string;
+
+      // Pelanggan di Web boleh cek jadwal satu per satu (dibatasi limit <= 1 untuk lookup Kode + No HP),
+      // sedangkan Admin & Teknisi yang login via Firebase Auth boleh membaca seluruh daftar.
+      allow get: if true;
+      allow list: if request.auth != null
+                  || (request.query.limit != null && request.query.limit <= 1);
+
+      // Hanya akun internal (Admin / Teknisi) yang sudah login yang boleh update status/jadwal
+      allow update: if request.auth != null;
+      allow delete: if false;
+    }
+  }
+}
