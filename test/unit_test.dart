@@ -31,6 +31,21 @@ void main() {
       // 4. Login dengan password salah harus gagal
       final failedUser = await auth.login('admin', 'salah_password');
       expect(failedUser, isNull);
+
+      // 5. Login akun Admin pada tab Teknisi (dan sebaliknya) harus ditolak
+      final wrongRoleAdmin = await auth.login(
+        'admin',
+        'admin123',
+        expectedRole: UserRole.technician,
+      );
+      expect(wrongRoleAdmin, isNull);
+
+      final wrongRoleTech = await auth.login(
+        'tek_alpha',
+        'tek123',
+        expectedRole: UserRole.admin,
+      );
+      expect(wrongRoleTech, isNull);
     });
   });
 

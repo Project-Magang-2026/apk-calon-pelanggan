@@ -49,8 +49,12 @@ class AuthService extends ChangeNotifier {
     ),
   ];
 
-  /// Login dengan verifikasi username & password
-  Future<UserModel?> login(String username, String password) async {
+  /// Login dengan verifikasi username, password, dan opsional kecocokan role
+  Future<UserModel?> login(
+    String username,
+    String password, {
+    UserRole? expectedRole,
+  }) async {
     // Simulasi delay autentikasi kecil untuk kesan responsif profesional
     await Future.delayed(const Duration(milliseconds: 300));
 
@@ -59,7 +63,10 @@ class AuthService extends ChangeNotifier {
 
     try {
       final user = registeredUsers.firstWhere(
-        (u) => u.username.toLowerCase() == cleanUsername && u.password == cleanPassword,
+        (u) =>
+            u.username.toLowerCase() == cleanUsername &&
+            u.password == cleanPassword &&
+            (expectedRole == null || u.role == expectedRole),
       );
       _currentUser = user;
       notifyListeners();

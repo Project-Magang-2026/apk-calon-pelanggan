@@ -41,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final user = await _authService.login(
       _usernameController.text,
       _passwordController.text,
+      expectedRole: _selectedRoleTab,
     );
 
     if (!mounted) return;
@@ -84,8 +85,10 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } else {
+      final roleLabel = _selectedRoleTab == UserRole.admin ? 'Admin' : 'Teknisi';
       setState(() {
-        _errorMessage = 'ID Pengguna atau Kata Sandi salah! Silakan coba lagi.';
+        _errorMessage =
+            'ID Pengguna atau Kata Sandi salah / tidak sesuai dengan role $roleLabel!';
       });
     }
   }
@@ -376,6 +379,19 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void _switchRoleTab(UserRole role) {
+    if (_selectedRoleTab == role) return;
+    FocusScope.of(context).unfocus();
+    _usernameController.clear();
+    _passwordController.clear();
+    _formKey.currentState?.reset();
+    setState(() {
+      _selectedRoleTab = role;
+      _errorMessage = null;
+      _isObscure = true;
+    });
+  }
+
   Widget _buildRoleTabs() {
     return Container(
       padding: const EdgeInsets.all(4),
@@ -390,12 +406,7 @@ class _LoginScreenState extends State<LoginScreen> {
               title: 'Admin',
               icon: Icons.shield_outlined,
               isSelected: _selectedRoleTab == UserRole.admin,
-              onTap: () {
-                setState(() {
-                  _selectedRoleTab = UserRole.admin;
-                  _errorMessage = null;
-                });
-              },
+              onTap: () => _switchRoleTab(UserRole.admin),
             ),
           ),
           Expanded(
@@ -403,12 +414,7 @@ class _LoginScreenState extends State<LoginScreen> {
               title: 'Teknisi',
               icon: Icons.handyman_outlined,
               isSelected: _selectedRoleTab == UserRole.technician,
-              onTap: () {
-                setState(() {
-                  _selectedRoleTab = UserRole.technician;
-                  _errorMessage = null;
-                });
-              },
+              onTap: () => _switchRoleTab(UserRole.technician),
             ),
           ),
         ],
